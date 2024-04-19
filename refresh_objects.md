@@ -91,13 +91,18 @@ class HasID(Protocol):
     id: str
 
 
-def get_item(server: TSC.Server, item_type: refreshable, filters: dict) -> HasID:
+def get_item(
+    server: TSC.Server,
+    item_type: refreshable,
+    filters: dict[str, str],
+) -> HasID:
     endpoint = getattr(server, item_type)
     query_result = endpoint.filter(**filters)
-    if len(query_result) != 1:
-        raise ValueError(f"Expected 1 {item_type} to match filters, found {len(query_result)}")
+    if (count := len(query_result)) != 1:
+        raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
 
     return query_result[0]
+
 ```
 
 Or perhaps you want to refresh all items that match the filters. A small tweak
@@ -119,10 +124,13 @@ similar pattern of the endpoints and the dynamic nature of python.
 
 ```python
 
-def refresh_item(server: TSC.Server, item_type: refreshable, item: HasID) -> TSC.JobItem:
+def refresh_item(
+    server: TSC.Server,
+    item_type: refreshable,
+    item: HasID
+) -> TSC.JobItem:
     endpoint = getattr(server, item_type)
     return endpoint.refresh(item)
-
 ```
 
 Now I can loop through the items, trigger the refreshes, and collect the job
@@ -221,16 +229,24 @@ refresh_items = {
     ],
 }
 
-def get_item(server: TSC.Server, item_type: refreshable, filters: dict) -> HasID:
+def get_item(
+    server: TSC.Server,
+    item_type: refreshable,
+    filters: dict[str, str],
+) -> HasID:
     endpoint = getattr(server, item_type)
     query_result = endpoint.filter(**filters)
-    if len(query_result) != 1:
-        raise ValueError(f"Expected 1 {item_type} to match filters, found {len(query_result)}")
+    if (count := len(query_result)) != 1:
+        raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
 
     return query_result[0]
 
 
-def refresh_item(server: TSC.Server, item_type: refreshable, item: HasID) -> TSC.JobItem:
+def refresh_item(
+    server: TSC.Server,
+    item_type: refreshable,
+    item: HasID
+) -> TSC.JobItem:
     endpoint = getattr(server, item_type)
     return endpoint.refresh(item)
 
