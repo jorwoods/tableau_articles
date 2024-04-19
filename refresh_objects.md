@@ -63,16 +63,16 @@ refreshable items, with the filters I need to find the item.
 # The collection of items I need to refresh
 refresh_items = {
     "datasources": [
-        {"name": "Sales Data", owner_email: "John.Doe@example.com"},
-        {"name": "Product Data", tags: "special"},
+        {"name": "Sales Data", "owner_email": "John.Doe@example.com"},
+        {"name": "Product Data", "tags": "special"},
     ],
     "workbooks": [
-        {"name": "Sales Dashboard", project_name: "Marketing"},
-        {"name": "Inventory Dashboard", owner_name: "Jane Doe", project_name: "Supply Chain"},
+        {"name": "Sales Dashboard", "project_name": "Marketing"},
+        {"name": "Inventory Dashboard", "owner_name": "Jane Doe", "project_name": "Supply Chain"},
     ],
     "flows": [
-        {"name": "Marketing funnel", owner_name: "John Doe"},
-        {"name": "Month End", project_name: "Finance"},
+        {"name": "Marketing funnel", "owner_name": "John Doe"},
+        {"name": "Month End", "project_name": "Finance"},
     ],
 }
 ```
@@ -194,16 +194,16 @@ auth = TSC.PersonalAccessTokenAuth(
 # The collection of items I need to refresh
 refresh_items = {
     "datasources": [
-        {"name": "Sales Data", owner_email: "John.Doe@example.com"},
-        {"name": "Product Data", tags: "special"},
+        {"name": "Sales Data", "owner_email": "John.Doe@example.com"},
+        {"name": "Product Data", "tags": "special"},
     ],
     "workbooks": [
-        {"name": "Sales Dashboard", project_name: "Marketing"},
-        {"name": "Inventory Dashboard", owner_name: "Jane Doe", project_name: "Supply Chain"},
+        {"name": "Sales Dashboard", "project_name": "Marketing"},
+        {"name": "Inventory Dashboard", "owner_name": "Jane Doe", "project_name": "Supply Chain"},
     ],
     "flows": [
-        {"name": "Marketing funnel", owner_name: "John Doe"},
-        {"name": "Month End", project_name: "Finance"},
+        {"name": "Marketing funnel", "owner_name": "John Doe"},
+        {"name": "Month End", "project_name": "Finance"},
     ],
 }
 
@@ -216,15 +216,18 @@ def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
 
 
 jobs = []
+def main() -> None:
+    with server.auth.sign_in(auth):
+        for item_type, items in refresh_items.items():
+            for filters in items:
+                item = get_item(server, item_type, filters)
+                job = refresh_item(server, item_type, item)
+                logger.info(f"Started refresh for {item_type} {item.name} with job id {job.id}")
+                jobs.append(job)
 
-with server.auth.sign_in(auth):
-    for item_type, items in refresh_items.items():
-        for filters in items:
-            item = get_item(server, item_type, filters)
-            job = refresh_item(server, item_type, item)
-            logger.info(f"Started refresh for {item_type} {item.name} with job id {job.id}")
-            jobs.append(job)
+        jobs = [wait_for_job(server, job) for job in jobs]
 
-    jobs = [wait_for_job(server, job) for job in jobs]
+if __name__ == "__main__":
+    main()
 ```
 
