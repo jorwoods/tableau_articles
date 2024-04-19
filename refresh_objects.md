@@ -172,6 +172,13 @@ function, or after the loop of waiting for jobs.
 Putting it all together, we have the following script:
 
 ```python
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#    "tableauserverclient",
+#    "python-dotenv"
+# ]
+# ///
 
 import logging
 import os
