@@ -1,10 +1,20 @@
 # Refreshing Workbooks, Datasources, and Flows
 
+<!--toc:start-->
+- [Refreshing Workbooks, Datasources, and Flows](#refreshing-workbooks-datasources-and-flows)
+  - [Finding the ID of the Item to Refresh](#finding-the-id-of-the-item-to-refresh)
+  - [Starting the Refresh](#starting-the-refresh)
+  - [Monitoring the Refresh](#monitoring-the-refresh)
+  - [Conclusion](#conclusion)
+<!--toc:end-->
+
 Scheduling refreshes of items on Tableau Server is critical to make sure that
 the data you see is up to date. This can become a problem when you need to
 time that refresh to occur after another process has completed, like the ETL
 jobs that populate the base tables. Fortunately, the Tableau REST API makes it
 simple to trigger a refresh of a workbook, datasource, or flow.
+
+
 
 ## Finding the ID of the Item to Refresh
 
@@ -102,6 +112,8 @@ def get_items(server: TSC.Server, item_type: refreshable, filters: dict) -> Iter
     return query_result
 ```
 
+## Starting the Refresh
+
 Now I craft another helper function to refresh the item, again leveraging the
 similar pattern of the endpoints and the dynamic nature of python.
 
@@ -129,6 +141,8 @@ with server.auth.sign_in(auth):
             jobs.append(job)
 ```
 
+## Monitoring the Refresh
+
 Now optionally, I may want to wait for the jobs to complete. Since I need to
 wait for all of the jobs to complete, there is no need to get clever with
 checking how many jobs are still running, so we can just wait for them naively.
@@ -148,6 +162,8 @@ def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
 jobs = [wait_for_job(server, job) for job in jobs]
 
 ```
+
+## Conclusion
 
 And that's it! You've now refreshed all of the items you needed to. If you need
 to do any additional handling of job state, you can add it to the `wait_for_job`
