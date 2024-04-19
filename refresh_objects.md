@@ -229,6 +229,12 @@ def get_item(server: TSC.Server, item_type: refreshable, filters: dict) -> HasID
 
     return query_result[0]
 
+
+def refresh_item(server: TSC.Server, item_type: refreshable, item: HasID) -> TSC.JobItem:
+    endpoint = getattr(server, item_type)
+    return endpoint.refresh(item)
+
+
 def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
     try:
         return server.jobs.wait_for_job(job)
