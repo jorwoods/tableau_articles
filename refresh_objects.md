@@ -175,6 +175,7 @@ Putting it all together, we have the following script:
 
 import logging
 import os
+from typing import Literal, Protocol
 
 from dotenv import load_dotenv
 import tableauserverclient as TSC
@@ -182,6 +183,12 @@ from tableauserverclient.server.exceptions import JobCancelledException, JobFail
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+
+refreshable = Literal["datasources", "workbooks", "flows"]
+
+class HasID(Protocol):
+    id: str
+
 
 server = TSC.Server(os.getenv("TABLEAU_SERVER"), True)
 auth = TSC.PersonalAccessTokenAuth(
@@ -206,6 +213,14 @@ refresh_items = {
         {"name": "Month End", "project_name": "Finance"},
     ],
 }
+
+def get_item(server: TSC.Server, item_type: refreshable, filters: dict) -> HasID:
+    endpoint = getattr(server, item_type)
+    query_result = endpoint.filter(**filters)
+    if len(query_result) != 1:
+        raise ValueError(f"Expected 1 {item_type} to match filters, found {len(query_result)}")
+
+    return query_result[0]
 
 def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
     try:
