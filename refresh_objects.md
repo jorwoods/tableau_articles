@@ -56,7 +56,8 @@ First, let's find the ID of the items that need to be refreshed. I don't know
 these off hand, but I do know some attributes of the items that I can use to
 filter down to the item I need. First I'll build a collection of the item types
 and attributes I need to filter on. I will create a dictionary of the
-refreshable items, with the filters I need to find the item.
+refreshable items, with the filters I need to find the item. Below is a few
+examples of different ways to filter the items.
 
 ```python
 
@@ -65,6 +66,7 @@ refresh_items = {
     "datasources": [
         {"name": "Sales Data", "owner_email": "John.Doe@example.com"},
         {"name": "Product Data", "tags": "special"},
+        {"id": "34904e3c-6df7-494c-8e3f-3065cd0a48e9"},
     ],
     "workbooks": [
         {"name": "Sales Dashboard", "project_name": "Marketing"},
@@ -97,6 +99,8 @@ def get_item(
     filters: dict[str, str],
 ) -> HasID:
     endpoint = getattr(server, item_type)
+    if (id_ := filters.get("id")):
+        return endpoint.get_by_id(id_)
     query_result = endpoint.filter(**filters)
     if (count := len(query_result)) != 1:
         raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
@@ -218,6 +222,7 @@ refresh_items = {
     "datasources": [
         {"name": "Sales Data", "owner_email": "John.Doe@example.com"},
         {"name": "Product Data", "tags": "special"},
+        {"id": "34904e3c-6df7-494c-8e3f-3065cd0a48e9"},
     ],
     "workbooks": [
         {"name": "Sales Dashboard", "project_name": "Marketing"},
@@ -235,6 +240,8 @@ def get_item(
     filters: dict[str, str],
 ) -> HasID:
     endpoint = getattr(server, item_type)
+    if (id_ := filters.get("id")):
+        return endpoint.get_by_id(id_)
     query_result = endpoint.filter(**filters)
     if (count := len(query_result)) != 1:
         raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
