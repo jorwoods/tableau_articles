@@ -14,8 +14,7 @@
 
 A question arose recently on the [Tableau DataDev slack](https://tabsoft.co/JoinTableauDev)
 about how to download data from a view when you have the name of the view. This
-is such a common need and its worth exploring how to do this and what the common
-traps might be.
+is a common need and its worth exploring how to do this and what the traps might be.
 
 For this example, we are going to use the Tableau Server Client (TSC) library.
 
