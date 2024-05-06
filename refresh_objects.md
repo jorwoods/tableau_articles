@@ -266,8 +266,8 @@ def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
     return server.jobs.get_by_id(job.id)
 
 
-jobs = []
 def main() -> None:
+    jobs = []
     with server.auth.sign_in(auth):
         for item_type, items in refresh_items.items():
             for filters in items:
