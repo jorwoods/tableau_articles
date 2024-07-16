@@ -52,10 +52,10 @@ in this same script. Thankfully, all of these items can utilize the
 [Django style filters](https://tableau.github.io/server-client-python/docs/filter-sort#django-style-filters-and-sorts)
 to find the item I need.
 
-First, let's find the ID of the items that need to be refreshed. I don't know
-these off hand, but I do know some attributes of the items that I can use to
-filter down to the item I need. First I'll build a collection of the item types
-and attributes I need to filter on. I will create a dictionary of the
+First, let's find the ID of the items that need to be refreshed. Maybe I don't
+know these off hand, but I do know some attributes of the items that I can use
+to filter down to the item I need. First I'll build a collection of the item
+types and attributes I need to filter on. I will create a dictionary of the
 refreshable items, with the filters I need to find the item. Below is a few
 examples of different ways to filter the items.
 
@@ -80,10 +80,11 @@ refresh_items = {
 ```
 
 Then I will create a helper function to find the item based on the filters
-above. TSC conveniently follows the same pattern for each endpoint, so we can
-leverage the dynamic nature of python to grab the endpoint we need on demand.
-Since TSC doesn't have a top level type all items inherit from, I will make a
-protocol to make the type hinting easier.
+above. If I already have the id, then I can just use that. TSC conveniently
+follows the same pattern for each endpoint, so we can leverage the dynamic
+nature of python to grab the endpoint we need on demand. Since TSC doesn't
+have a top level type all items inherit from, I will make a protocol to make
+the type hinting easier.
 
 ```python
 from typing import Literal, Protocol
