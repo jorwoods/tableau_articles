@@ -167,7 +167,6 @@ csv_options.vf('Category', 'Furniture')
 
 # loop over the views
 for view in views:
-    view: TSC.ViewItem
     server.views.populate_csv(view, csv_options)
     with open(f"{view.name}.csv", "w") as f:
         for chunk in view.csv:
@@ -244,7 +243,6 @@ with server.auth.sign_in(auth):
 
 # loop over the views
     for view in views:
-        view: TSC.ViewItem
         server.views.populate_csv(view, csv_options)
         with open(f"{view.name}.csv", "w") as f:
             for chunk in view.csv:
