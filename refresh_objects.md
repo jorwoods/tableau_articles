@@ -91,7 +91,9 @@ from typing import Literal, Protocol
 refreshable = Literal["datasources", "workbooks", "flows"]
 
 class HasID(Protocol):
-    id: str
+    @property
+    def id(self) -> str:
+        ...
 
 
 def get_item(
@@ -99,10 +101,17 @@ def get_item(
     item_type: refreshable,
     filters: dict[str, str],
 ) -> HasID:
+    # Get the Endpoint for the item type.
     endpoint = getattr(server, item_type)
+
+    # If we have the id, just get the item by id
     if (id_ := filters.get("id")):
         return endpoint.get_by_id(id_)
+
+    # Otherwise, use what we know to filter down to the item we need.
     query_result = endpoint.filter(**filters)
+
+    # If we don't find exactly one item, raise an error.
     if (count := len(query_result)) != 1:
         raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
 
@@ -118,6 +127,13 @@ from typing import Iterator
 
 def get_items(server: TSC.Server, item_type: refreshable, filters: dict) -> Iterator[HasID]:
     endpoint = getattr(server, item_type)
+
+    # If we have the id, just get the item by id
+    if (id_ := filters.get("id")):
+        # Construct a generator that will yield the item. This makes it easy to 
+        # keep the same pattern of returning an iterator.
+        return (i for i in [endpoint.get_by_id(id_)])
+
     query_result = endpoint.filter(**filters)
     return query_result
 ```
@@ -207,7 +223,9 @@ logger = logging.getLogger(__name__)
 refreshable = Literal["datasources", "workbooks", "flows"]
 
 class HasID(Protocol):
-    id: str
+    @property
+    def id(self) -> str:
+        ...
 
 
 server = TSC.Server(os.getenv("TABLEAU_SERVER"), True)
@@ -240,10 +258,17 @@ def get_item(
     item_type: refreshable,
     filters: dict[str, str],
 ) -> HasID:
+    # Get the Endpoint for the item type.
     endpoint = getattr(server, item_type)
+
+    # If we have the id, just get the item by id
     if (id_ := filters.get("id")):
         return endpoint.get_by_id(id_)
+
+    # Otherwise, use what we know to filter down to the item we need.
     query_result = endpoint.filter(**filters)
+
+    # If we don't find exactly one item, raise an error.
     if (count := len(query_result)) != 1:
         raise ValueError(f"Expected 1 {item_type} to match filters, found {count}")
 
@@ -260,6 +285,7 @@ def refresh_item(
 
 
 def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
+    """Wait for the job to complete, handling failures and cancellations."""
     try:
         return server.jobs.wait_for_job(job)
     except (JobCancelledException, JobFailedException) as e:
@@ -268,15 +294,24 @@ def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
 
 
 def main() -> None:
+    # Create a list to hold the jobs.
     jobs = []
     with server.auth.sign_in(auth):
+        # We have a mapping of {endpoint_type: [{filter}, {filter}, ...], ...}.
+        # Loop through the endpoints and filters to get the items and refresh
+        # them.
         for item_type, items in refresh_items.items():
+            # Loop through the filters for the item type.
             for filters in items:
+                # Get the item based on the filters.
                 item = get_item(server, item_type, filters)
+                # Trigger the refresh, and get the job item.
                 job = refresh_item(server, item_type, item)
                 logger.info(f"Started refresh for {item_type} {item.name} with job id {job.id}")
+                # Append the job to the list of jobs. 
                 jobs.append(job)
 
+        # Wait for the jobs to complete.
         jobs = [wait_for_job(server, job) for job in jobs]
 
 if __name__ == "__main__":
