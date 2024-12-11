@@ -123,16 +123,17 @@ Or perhaps you want to refresh all items that match the filters. A small tweak
 makes that simple.
 
 ```python
-from typing import Iterator
+from collections.abc import Iterable
 
-def get_items(server: TSC.Server, item_type: refreshable, filters: dict) -> Iterator[HasID]:
+def get_items(server: TSC.Server, item_type: refreshable, filters: dict) -> Iterable[HasID]:
     endpoint = getattr(server, item_type)
 
     # If we have the id, just get the item by id
     if (id_ := filters.get("id")):
-        # Construct a generator that will yield the item. This makes it easy to 
-        # keep the same pattern of returning an iterator.
-        return (i for i in [endpoint.get_by_id(id_)])
+        # Construct a tuple with the item. This is to keep the return type
+        # consistent, so you can iterate over the results without needing to
+        # check if it's a single item or a collection.
+        return (endpoint.get_by_id(id_),)
 
     query_result = endpoint.filter(**filters)
     return query_result
@@ -179,7 +180,7 @@ However, we will need to handle cases where the refresh has either failed or
 has been canceled.
 
 ```python
-from tableauserverclient.server.exceptions import JobCancelledException, JobFailedException 
+from tableauserverclient.server.exceptions import JobCancelledException, JobFailedException
 
 def wait_for_job(server: TSC.Server, job: TSC.JobItem) -> TSC.JobItem:
     try:
@@ -215,7 +216,7 @@ from typing import Literal, Protocol
 
 from dotenv import load_dotenv
 import tableauserverclient as TSC
-from tableauserverclient.server.exceptions import JobCancelledException, JobFailedException 
+from tableauserverclient.server.exceptions import JobCancelledException, JobFailedException
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -308,7 +309,7 @@ def main() -> None:
                 # Trigger the refresh, and get the job item.
                 job = refresh_item(server, item_type, item)
                 logger.info(f"Started refresh for {item_type} {item.name} with job id {job.id}")
-                # Append the job to the list of jobs. 
+                # Append the job to the list of jobs.
                 jobs.append(job)
 
         # Wait for the jobs to complete.
